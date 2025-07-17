@@ -1,0 +1,169 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "http://localhost:5000/api/companies",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "admin123"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -380,
+        -180
+      ],
+      "id": "ab6b84b3-f3b4-4524-a1a6-1cc4b809a598",
+      "name": "HTTP Request",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        -180
+      ],
+      "id": "edd2610f-702c-47ae-bcd3-980e34d7336f",
+      "name": "Trigger Node"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        -180
+      ],
+      "id": "25673bc1-46f4-4863-932c-97b3f21ec2b8",
+      "name": "Function Node"
+    },
+    {
+      "parameters": {
+        "url": "https://api.hunter.io/v2/domain-search?domain=https://sweetkaramcoffee.in/&api_key=7b2c658459a7865bc74c9e91507181d68bed373b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        -180
+      ],
+      "id": "1354b1a3-c521-44d4-8fa5-28bfd777d419",
+      "name": "HTTP Request1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/webhooks/n8n-leads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n{\n  \"company_id\": \"{{$json[\"company_id\"] || 1}}\",\n  \"name\": \"{{$json[\"name\"]}}\",\n  \"title\": \"{{$json[\"title\"]}}\",\n  \"email\": \"{{$json[\"email\"]}}\",\n  \"linkedin_url\": \"{{$json[\"linkedin\"]}}\"\n}\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        20
+      ],
+      "id": "ab08507c-d324-49ec-b367-b2f3c68014eb",
+      "name": "HTTP Request2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const emails = items[0].json.data.emails || [];\n\nconst decisionMakers = emails.filter(e =>\n  /CEO|CTO|Founder|Director|VP/i.test(e.position || \"\")\n);\n\nreturn decisionMakers.map(e => ({\n  json: {\n    name: `${e.first_name || \"\"} ${e.last_name || \"\"}`.trim(),\n    title: e.position || \"Unknown\",\n    email: e.value || \"\",\n    linkedin: e.linkedin || \"\",\n    company_id: $json[\"company_id\"] || null\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        -180
+      ],
+      "id": "b45df2d5-5111-4291-ad43-6c1f17a68f33",
+      "name": "Code",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Node": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Function Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function Node": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1defdc78-4310-4b92-ac89-a16802cb46f5",
+  "meta": {
+    "instanceId": "10d86a139bf0c8ab6516ae262787762d71258aa28b3d055ba84680324d9ca389"
+  },
+  "id": "ex7xMP6d6QX5cix5",
+  "tags": []
+}
