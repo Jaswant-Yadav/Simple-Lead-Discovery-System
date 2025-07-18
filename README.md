@@ -31,7 +31,7 @@ This project is a simplified backend lead generation system built as part of the
 
 ```bash
 git clone https://github.com/Jaswant-Yadav/Simple-Lead-Discovery-System.git
-cd lead-discovery-system
+cd Simple-Lead-Discovery-System
 
 
 ##  2. Install Backend Dependencies
